@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FA4072A72EB5322F00AA716E /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = FA4072A62EB5322F00AA716E /* FirebaseFirestore */; };
 		FAE10B952EB2E27C0072B26F /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FAE10B942EB2E27C0072B26F /* FirebaseCore */; };
 		FAE10B972EB2E2840072B26F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FAE10B962EB2E2840072B26F /* FirebaseAuth */; };
 /* End PBXBuildFile section */
@@ -30,6 +31,7 @@
 			files = (
 				FAE10B952EB2E27C0072B26F /* FirebaseCore in Frameworks */,
 				FAE10B972EB2E2840072B26F /* FirebaseAuth in Frameworks */,
+				FA4072A72EB5322F00AA716E /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +84,7 @@
 			packageProductDependencies = (
 				FAE10B942EB2E27C0072B26F /* FirebaseCore */,
 				FAE10B962EB2E2840072B26F /* FirebaseAuth */,
+				FA4072A62EB5322F00AA716E /* FirebaseFirestore */,
 			);
 			productName = TradeLab;
 			productReference = FAE5F5132EB1A790003F40CA /* TradeLab.app */;
@@ -365,6 +368,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		FA4072A62EB5322F00AA716E /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FAE10B922EB2E2460072B26F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
 		FAE10B942EB2E27C0072B26F /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FAE10B922EB2E2460072B26F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
