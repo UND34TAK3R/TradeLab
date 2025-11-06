@@ -8,13 +8,17 @@
 import SwiftUI
 
 struct RegisterView: View {
+    @State private var displayName = ""
     @State private var email = ""
     @State private var password = ""
-    @EnvironmentObject var authManager: AuthManager
+    @StateObject var auth = AuthManager.shared
     @State private var errorMessage: String?
     
     var body: some View {
         VStack {
+            TextField("Username", text: $displayName)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .autocapitalization(.none)
             TextField("Email", text: $email)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .autocapitalization(.none)
@@ -28,20 +32,26 @@ struct RegisterView: View {
             }
             
             Button("Register"){
-                if email.isEmpty || password.isEmpty {
-                    errorMessage = "Please fill in all fields"
+                print("SignUp clicked")
+                //validation
+                guard Validators.checkEmail(email) else{
+                    self.errorMessage = "Invalid email"
                     return
                 }
-                if password.count < 6 {
-                    errorMessage = "Password must have at least 6 characters"
+                guard Validators.isValidPassword(password) else{
+                    self.errorMessage = "Password must be at least 6 characters"
                     return
                 }
-                authManager.register(email: email, password: password) { result in
-                    switch result{
-                    case .success:
-                        print("Registeration Successful")
-                    case .failure(let error):
-                        self.errorMessage = error.localizedDescription
+                guard !displayName.trimmingCharacters(in: .whitespaces).isEmpty else{
+                    self.errorMessage = "Display name is required"
+                    return
+                }
+                auth.signUp(email: email, password: password, displayName: displayName) { result in
+                    switch result {
+                    case.success(let success):
+                        self.errorMessage = nil
+                    case .failure(let failure):
+                        self.errorMessage = failure.localizedDescription
                     }
                 }
             }

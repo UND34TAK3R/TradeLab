@@ -23,7 +23,7 @@ class AuthManager: ObservableObject{
     func signUp(email: String, password: String, displayName: String, completion: @escaping (Result<AppUser, Error>) -> Void){
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
-               return completion(.failure(error))
+                return completion(.failure(error))
             }
             guard let user = result?.user else {
                 return completion(.failure(SimpleError("Unable to create user")))
@@ -150,17 +150,6 @@ class AuthManager: ObservableObject{
         }catch{
             print(error.localizedDescription)
             return .failure(error)
-        }
-    }
-    
-    //simple error
-    struct SimpleError: Error{
-        let message: String
-        init(_ message: String) {
-            self.message = message
-        }
-        var localizedDescription: String {
-            return message
         }
     }
 }

@@ -14,5 +14,6 @@ struct AppUser: Identifiable, Codable {
     let email: String
     var displayName: String
     var picture: String? = nil
+    var isDarkMode: Bool = false
     var isActive: Bool = true
 }
