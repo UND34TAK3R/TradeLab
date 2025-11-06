@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var authManager: AuthManager
+    @StateObject private var auth = AuthManager.shared
+    @State private var isLoaded = false
     var body: some View {
         NavigationView{
-            if authManager.user != nil {
+            if auth.currentUser != nil {
                 PortfolioView()
             }
             else{
