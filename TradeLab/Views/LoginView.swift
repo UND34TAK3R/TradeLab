@@ -10,7 +10,7 @@ import SwiftUI
 struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
-    @EnvironmentObject var authManager: AuthManager
+    @StateObject var auth = AuthManager.shared
     @State private var errorMessage: String?
     var body: some View {
         VStack {
@@ -31,7 +31,7 @@ struct LoginView: View {
                     errorMessage = "Please fill in all fields"
                     return
                 }
-                authManager.login(email: email, password: password) { result in
+                auth.login(email: email, password: password) { result in
                     switch result{
                     case .success:
                         print("Login Successful")

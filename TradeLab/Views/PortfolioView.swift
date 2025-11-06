@@ -9,14 +9,15 @@ import SwiftUI
 import FirebaseAuth
 
 struct PortfolioView: View {
-    @EnvironmentObject var authManager: AuthManager
+    @StateObject var auth = AuthManager.shared
     var body: some View {
         VStack{
-            Text("Welcome, \(authManager.user?.email ?? "Unknown user")!")
+            Text("Welcome, \(auth.currentUser?.displayName ?? "Uknown User") !")
                 .font(.title)
                 .padding()
-            Button{
-                authManager.logout()
+            Button(role: .destructive){
+                let result = auth.signOut()
+    
             } label: {
                 Text("Logout")
                     .foregroundStyle(.white)
