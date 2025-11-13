@@ -16,44 +16,27 @@ struct RegisterView: View {
     
     var body: some View {
         ZStack {
-            // Background gradient
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]), startPoint: .topLeading, endPoint: .bottomTrailing
+            ).ignoresSafeArea()
             
-            // Scrollable content
             ScrollView {
                 VStack(spacing: 25) {
-                    // Header with Logo
                     VStack(spacing: 8) {
                         // Can change to an image in the future
                         ZStack {
                             Circle()
                                 .fill(Color.white.opacity(0.3))
                                 .frame(width: 90, height: 90)
-                            Image(systemName: "chart.line.uptrend.xyaxis")
+                            Image(systemName: "person.crop.circle.badge.plus")
                                 .font(.system(size: 50))
                                 .foregroundStyle(Color.white)
                         }
                         .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
-                        
-                        Text("Create Account")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(Color.white)
-                        
-                        Text("Join TradeLabs - Start your trading journey today!")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
                     }
-                    .padding(.top, 40)
+                    .padding(.top, 60)
                     .padding(.bottom, 20)
                     
-                    // Form container
                     VStack(spacing: 20) {
                         CustomTextField(
                             icon: "person.fill",
@@ -128,6 +111,7 @@ struct RegisterView: View {
         }
     }
     
+    
     private func handleRegistration() {
         // Validate email
         guard Validators.checkEmail(email) else {
@@ -137,7 +121,7 @@ struct RegisterView: View {
         
         // Validate password
         guard Validators.isValidPassword(password) else {
-            self.errorMessage = "Password must be at least 6 characters."
+            self.errorMessage = "Password must be atleast 6 characters."
             return
         }
         
@@ -147,18 +131,18 @@ struct RegisterView: View {
             return
         }
         
-        auth.signUp(email: email, password: password, displayName: displayName) { result in
+        auth.signUp(email: email, password: password, displayName: displayName, completion: {
+            result in
             switch result {
             case .success:
                 self.errorMessage = nil
-            case .failure(let failure):
-                self.errorMessage = failure.localizedDescription
+            case .failure(let failiure):
+                self.errorMessage = failiure.localizedDescription
             }
-        }
+        })
     }
 }
 
-// MARK: - Custom Text Field
 struct CustomTextField: View {
     let icon: String
     let placeholder: String
@@ -167,7 +151,7 @@ struct CustomTextField: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(Color.white.opacity(0.6))
                 .frame(width: 20)
             TextField(placeholder, text: $text)
                 .foregroundStyle(Color.white)
@@ -184,7 +168,6 @@ struct CustomTextField: View {
     }
 }
 
-// MARK: - Custom Secure Field
 struct CustomSecureField: View {
     let icon: String
     let placeholder: String
@@ -209,7 +192,5 @@ struct CustomSecureField: View {
 }
 
 #Preview {
-    NavigationView {
-        RegisterView()
-    }
+    RegisterView()
 }
