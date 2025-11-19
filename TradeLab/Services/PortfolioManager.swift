@@ -15,23 +15,23 @@ class PortfolioManager {
         livePrices[symbol] = price
     }
     
-    func totalValue() -> Double{
-        var value = cash
-        for holding in holdings{
-            if let currentPrice = livePrices[holding.symbol]{
-                value += currentPrice * holding.quantity
-            }
-        }
-        return value
-    }
+   // func totalValue() -> Double{
+   //     var value = cash
+  //      for holding in holdings{
+  //          if let currentPrice = livePrices[holding.symbol]{
+  //              value += currentPrice * holding.quantity
+  //          }
+  //      }
+   //     return value
+   // }
     
-    func unrealizedGain(holding: Holding, currentPrice: Double) -> Double{
-        return (currentPrice - holding.avgBuyPrice) * holding.quantity
-    }
+ //   func unrealizedGain(holding: Holding, currentPrice: Double) -> Double{
+  //      return (currentPrice - holding.avgBuyPrice) * holding.quantity
+  //  }
     
-    func unrealizedGainPercentage(holding: Holding, currentPrice: Double) -> Double{
-        return ((currentPrice - holding.avgBuyPrice) / holding.avgBuyPrice) * 100
-    }
+   // func unrealizedGainPercentage(holding: Holding, currentPrice: Double) -> Double{
+//        return ((currentPrice - holding.avgBuyPrice) / holding.avgBuyPrice) * 100
+ //   }
     
     //TODO: functions Buy/Sell, RealizedGainsTracking, AvgBuyCalculation
 }

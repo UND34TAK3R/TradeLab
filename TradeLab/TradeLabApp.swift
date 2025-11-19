@@ -21,10 +21,15 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct TradeLabApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var authManager = AuthManager()
+    @StateObject var webSocketsManager = WebSocketsManager()
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(authManager)
+                .environmentObject(webSocketsManager)
+                .onAppear {
+                    webSocketsManager.startCollectingTrades()
+            }
         }
     }
 }
