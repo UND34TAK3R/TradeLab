@@ -337,16 +337,16 @@ struct HoldingCard: View {
                     .fontWeight(.bold)
                     .foregroundStyle(.white)
                 
-                Text("\(String(format: "%.2f", holding.quantity)) shares")
-                    .font(.caption)
-                    .foregroundStyle(Color.white.opacity(0.7))
+                //Text("\(String(format: "%.2f", holding.quantity)) shares")
+                   // .font(.caption)
+                   // .foregroundStyle(Color.white.opacity(0.7))
             }
             
             Spacer()
             
             // Price Info
             VStack(alignment: .trailing, spacing: 4) {
-                Text(String(format: "$%.2f", holding.avgBuyPrice))
+                Text(String(format: "$%.2f", holding.lastPrice))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(.white)

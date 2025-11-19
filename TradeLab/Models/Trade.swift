@@ -11,6 +11,22 @@ import Foundation
 public struct Trade: Codable {
     var symbol: String // s
     var currentPrice: Double //p
-    var Volume: Int // v
-    var timestamp: TimeInterval //TBD
+    var Volume: Double // v
+    var timestamp: Int64 //TBD
+    let conditions: [String]?
+    
+    enum CodingKeys: String, CodingKey {
+        case currentPrice = "p"
+        case symbol = "s"
+        case Volume = "v"
+        case timestamp = "t"
+        case conditions = "c"
+    }
 }
+
+struct TradeResponse: Codable {
+    let data: [Trade]?
+    let type: String
+}
+
+

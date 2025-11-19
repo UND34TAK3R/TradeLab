@@ -14,7 +14,11 @@ struct Holding: Codable, Identifiable {
     
     @DocumentID var id: String?
     let symbol: String
-    var quantity: Double
-    var avgBuyPrice: Double
+    var lastPrice: Double
+    var timestamp: String
+    var open: Double
+    var high: Double
+    var low: Double
+    var volume: Double
+    var percentageChange: Double
 }
-

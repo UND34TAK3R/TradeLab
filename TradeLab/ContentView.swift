@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var auth = AuthManager.shared
+    @StateObject private var socket = WebSocketsManager.shared
     @State private var isLoaded = false
     var body: some View {
         NavigationView{
@@ -25,4 +26,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(AuthManager())
+        .environmentObject(WebSocketsManager())
 }
