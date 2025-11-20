@@ -194,24 +194,6 @@ struct PortfolioView: View {
                             .background(Color.red.opacity(0.1))
                             .cornerRadius(10)
                         }
-                        
-                        // Logout Button
-                        Button(action: {
-                            showLogoutAlert = true
-                        }) {
-                            HStack {
-                                Image(systemName: "arrow.right.square.fill")
-                                Text("Logout")
-                            }
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red.opacity(0.7))
-                            .cornerRadius(15)
-                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
-                        }
-                        .padding(.top, 10)
                     }
                     .padding(.horizontal, 30)
                     .padding(.vertical, 40)

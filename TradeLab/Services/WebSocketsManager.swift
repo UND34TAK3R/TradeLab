@@ -76,7 +76,6 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
     
     // FUNCTIONS FOR URLSessionWebSocketDelegate METHODS
     
-    
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         print("WebSocket connected.")
         // Start recieveing messages immediately after connection is established
@@ -121,7 +120,7 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
         self.connect(urlString: "wss://echo.websocket.org")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.send(text: "Hello!")
+            self.send(text: "Hello!/Users/undertaker/Desktop/IOS_APPLICATIONS_1/TradeLab/TradeLab.xcodeproj")
         }
     }
     
