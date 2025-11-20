@@ -14,7 +14,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView{
             if auth.currentUser != nil {
-                PortfolioView()
+                TabScreen()
             }
             else{
                 LoginView()
