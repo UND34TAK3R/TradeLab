@@ -127,9 +127,7 @@ struct ProfileView: View {
                             )
                             
                             // Edit Profile Button
-                            Button(action: {
-                                // Add edit profile action
-                            }) {
+                            NavigationLink(destination: EditProfileView()) {
                                 HStack {
                                     Image(systemName: "pencil")
                                     Text("Edit Profile")

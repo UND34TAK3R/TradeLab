@@ -11,6 +11,7 @@ import Combine
 class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject{
     
     @Published var trades: [Trade] = []
+    @Published var stockPrices: [String: StockPrice] = [:]
     
     //singleton pattern
     static let shared = WebSocketsManager()
@@ -28,6 +29,26 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
         jsonParser.onTradesParsed = { [weak self] trades in
             DispatchQueue.main.async {
                 self?.trades.append(contentsOf: trades)
+                //Update Price Tracking
+                for trade in trades {
+                    if let exist = self?.stockPrices[trade.symbol]{
+                        //Update Stock Price fields
+                        self?.stockPrices[trade.symbol] = StockPrice(
+                            symbol: trade.symbol,
+                            currentPrice: trade.currentPrice,
+                            previousPrice: exist.currentPrice,
+                            timestamp: Date()
+                        )
+                    }else{
+                        //If there are none before
+                        self?.stockPrices[trade.symbol] = StockPrice(
+                            symbol: trade.symbol,
+                            currentPrice: trade.currentPrice,
+                            previousPrice: nil,
+                            timestamp: Date()
+                        )
+                    }
+                }
             }
         }
     }
