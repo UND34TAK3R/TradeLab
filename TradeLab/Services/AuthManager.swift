@@ -152,4 +152,61 @@ class AuthManager: ObservableObject{
             return .failure(error)
         }
     }
+    
+    //function to update display name
+    func updateDisplayName(displayName: String, completion: @escaping (Result<Void, Error>)->Void){
+        //uid
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return completion(.success(()))
+        }
+        db.collection("users").document(uid).updateData(["displayName": displayName]){
+            error in
+            if let error = error{
+                return completion(.failure(error))
+            }else{
+                //refetch the user object
+                self.fetchCurrentAppUser{ _ in
+                    completion(.success(()))
+                }
+            }
+        }
+    }
+    
+    //Function to update profile picture
+    func updateProfilePicture(profilePicture: UIImage, completion: @escaping (Result<Void, Error>)-> Void){
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return completion(.success(()))
+        }
+        let imageData = profilePicture.jpegData(compressionQuality: 0.8)
+        let imageString = imageData?.base64EncodedString() ?? ""
+        db.collection("users").document(uid).updateData(["picture": imageString]){
+            error in
+            if let error = error{
+                return completion(.failure(error))
+            }else{
+                self.fetchCurrentAppUser { _ in
+                    completion(.success(()))
+                }
+            }
+        }
+    }
+    
+    //Function to update Dark Mode
+    func updateIsDarkMode(isDarkMode: Bool, completion: @escaping (Result<Void, Error>)->Void){
+        //uid
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return completion(.success(()))
+        }
+        db.collection("users").document(uid).updateData(["isDarkMode": isDarkMode]){
+            error in
+            if let error = error{
+                return completion(.failure(error))
+            }else{
+                //refetch the user object
+                self.fetchCurrentAppUser{ _ in
+                    completion(.success(()))
+                }
+            }
+        }
+    }
 }
