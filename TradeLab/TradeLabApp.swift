@@ -22,11 +22,13 @@ struct TradeLabApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var authManager = AuthManager()
     @StateObject var webSocketsManager = WebSocketsManager()
+    @StateObject var transactionManager = TransactionsManager()
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(authManager)
                 .environmentObject(webSocketsManager)
+                .environmentObject(transactionManager)
                 .onAppear {
                     webSocketsManager.startCollectingTrades()
             }
