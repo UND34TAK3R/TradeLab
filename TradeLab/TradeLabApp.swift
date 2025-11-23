@@ -23,12 +23,14 @@ struct TradeLabApp: App {
     @StateObject var authManager = AuthManager()
     @StateObject var webSocketsManager = WebSocketsManager()
     @StateObject var transactionManager = TransactionsManager()
+    @StateObject var holdingsManager = HoldingsManager()
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(authManager)
                 .environmentObject(webSocketsManager)
                 .environmentObject(transactionManager)
+                .environmentObject(holdingsManager)
                 .onAppear {
                     webSocketsManager.startCollectingTrades()
             }
