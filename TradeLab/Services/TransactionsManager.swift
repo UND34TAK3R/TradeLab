@@ -28,7 +28,9 @@ class TransactionsManager: ObservableObject {
                 if let error = error{
                     return completion(.failure(error))
                 }
-                //refetch transactions on success
+                HoldingsManager.shared.updateHoldingFromTransaction(transaction){
+                    result in print(result)
+                }
                 self.fetchTransactions{result in
                     switch result {
                     case .success(let transactions):
