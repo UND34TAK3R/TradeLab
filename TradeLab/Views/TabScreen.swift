@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct TabScreen: View {
+    init() {
+        UITabBar.appearance().backgroundColor = UIColor.clear
+        UITabBar.appearance().unselectedItemTintColor = UIColor.gray
+    }
+    
     var body: some View {
         TabView {
             PortfolioView()
@@ -27,12 +32,12 @@ struct TabScreen: View {
                 }
             ProfileView()
                 .tabItem {
-                    Image(systemName: "gear")
-                    Text("Settings")
+                    Image(systemName: "person.crop.circle") // change to icon ?
+                    Text("Profile")
                 }
         }
-        .tint(.indigo)
-        .tabViewStyle(.sidebarAdaptable)
+        .accentColor(.indigo)
+        .background(Color.clear)
     }
 }
 
