@@ -10,6 +10,7 @@ struct ContentView: View {
     @StateObject private var auth = AuthManager.shared
     @StateObject private var socket = WebSocketsManager.shared
     @StateObject private var transactions = TransactionsManager.shared
+    @StateObject private var holdings = HoldingsManager.shared
     @State private var isLoaded = false
     
     var body: some View {
@@ -18,12 +19,24 @@ struct ContentView: View {
                 TabScreen()
                     .onAppear {
                         if !isLoaded {
+                            isLoaded = true 
+                            
+                            // Fetch both concurrently
                             transactions.fetchTransactions { result in
                                 switch result {
                                 case .success:
-                                    isLoaded = true
+                                    print("Transactions loaded successfully")
                                 case .failure(let error):
                                     print("Error fetching transactions: \(error.localizedDescription)")
+                                }
+                            }
+                            
+                            holdings.fetchHoldings { result in
+                                switch result {
+                                case .success:
+                                    print("Holdings loaded successfully")
+                                case .failure(let error):
+                                    print("Error fetching holdings: \(error.localizedDescription)")
                                 }
                             }
                         }
@@ -40,4 +53,5 @@ struct ContentView: View {
         .environmentObject(AuthManager())
         .environmentObject(WebSocketsManager())
         .environmentObject(TransactionsManager())
+        .environmentObject(HoldingsManager())
 }
