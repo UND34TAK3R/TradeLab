@@ -6,7 +6,7 @@
 //
 
 import Foundation
-struct StockPrice {
+struct StockPrice: Equatable {
     let symbol: String
     var currentPrice: Double
     var previousPrice: Double?

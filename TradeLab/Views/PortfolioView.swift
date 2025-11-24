@@ -21,8 +21,10 @@ import FirebaseFirestore
 
 struct PortfolioView: View {
     @StateObject var auth = AuthManager.shared
-    @State private var holdings: [Holding] = []
-    @State private var portfolioStats: PortfolioStatistics?
+    @StateObject var holdingsManager = HoldingsManager.shared
+    @StateObject var webSocketManager = WebSocketsManager.shared
+    
+    @State private var portfolio: Portfolio?
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var showLogoutAlert = false
@@ -74,7 +76,7 @@ struct PortfolioView: View {
                     .padding(.bottom, 20)
                     
                     // Portfolio Statistics Card
-                    if let stats = portfolioStats {
+                    if let portfolio = portfolio {
                         VStack(spacing: 20) {
                             Text("Portfolio Overview")
                                 .font(.headline)
@@ -86,7 +88,7 @@ struct PortfolioView: View {
                                 Text("Total Portfolio Value")
                                     .font(.caption)
                                     .foregroundStyle(Color.white.opacity(0.7))
-                                Text(String(format: "$%.2f", stats.totalValue))
+                                Text(String(format: "$%.2f", portfolio.totalValue))
                                     .font(.system(size: 36, weight: .bold))
                                     .foregroundStyle(.white)
                             }
@@ -99,42 +101,35 @@ struct PortfolioView: View {
                             VStack(spacing: 12) {
                                 HStack(spacing: 15) {
                                     StatCard(
-                                        title: "Cash",
-                                        value: String(format: "$%.2f", stats.cash),
+                                        title: "Total Cost",
+                                        value: String(format: "$%.2f", portfolio.totalCost),
                                         icon: "dollarsign.circle.fill",
-                                        color: .green
+                                        color: .blue
                                     )
                                     
                                     StatCard(
-                                        title: "Stock Value",
-                                        value: String(format: "$%.2f", stats.stockValue),
+                                        title: "Market Value",
+                                        value: String(format: "$%.2f", portfolio.totalValue),
                                         icon: "chart.bar.fill",
-                                        color: .blue
+                                        color: .green
                                     )
                                 }
                                 
                                 HStack(spacing: 15) {
                                     StatCard(
-                                        title: "Total Gain/Loss",
-                                        value: String(format: "$%.2f", stats.totalGainLoss),
-                                        icon: stats.totalGainLoss >= 0 ? "arrow.up.circle.fill" : "arrow.down.circle.fill",
-                                        color: stats.totalGainLoss >= 0 ? .green : .red
+                                        title: "Unrealized P/L",
+                                        value: String(format: "$%.2f", portfolio.unrealizedPL),
+                                        icon: portfolio.unrealizedPL >= 0 ? "arrow.up.circle.fill" : "arrow.down.circle.fill",
+                                        color: portfolio.unrealizedPL >= 0 ? .green : .red
                                     )
                                     
                                     StatCard(
-                                        title: "Percentage",
-                                        value: String(format: "%.2f%%", stats.totalGainLossPercentage),
+                                        title: "Return %",
+                                        value: String(format: "%.2f%%", portfolio.unrealizedPLPercent),
                                         icon: "percent",
-                                        color: stats.totalGainLossPercentage >= 0 ? .green : .red
+                                        color: portfolio.unrealizedPLPercent >= 0 ? .green : .red
                                     )
                                 }
-                                
-                                StatCard(
-                                    title: "Realized Gain",
-                                    value: String(format: "$%.2f", stats.realizedGain),
-                                    icon: "checkmark.circle.fill",
-                                    color: .purple
-                                )
                             }
                         }
                         .padding(.horizontal, 30)
@@ -151,7 +146,7 @@ struct PortfolioView: View {
                                 .font(.headline)
                                 .foregroundStyle(.white)
                             Spacer()
-                            Text("\(holdings.count) stocks")
+                            Text("\(holdingsManager.holdingsDisplay.count) stocks")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.white.opacity(0.7))
                         }
@@ -161,7 +156,7 @@ struct PortfolioView: View {
                                 .scaleEffect(1.5)
                                 .tint(.white)
                                 .padding(.vertical, 40)
-                        } else if holdings.isEmpty {
+                        } else if holdingsManager.holdingsDisplay.isEmpty {
                             VStack(spacing: 15) {
                                 Image(systemName: "chart.line.flattrend.xyaxis")
                                     .font(.system(size: 50))
@@ -176,8 +171,11 @@ struct PortfolioView: View {
                             .padding(.vertical, 40)
                         } else {
                             VStack(spacing: 12) {
-                                ForEach(holdings) { holding in
-                                    HoldingCard(holding: holding)
+                                ForEach(holdingsManager.holdingsDisplay) { holding in
+                                    NavigationLink(destination: StockDetailView(symbol: holding.symbol)) {
+                                        HoldingCard(holding: holding)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
                             }
                         }
@@ -217,6 +215,9 @@ struct PortfolioView: View {
         .onAppear {
             loadPortfolioData()
         }
+        .onChange(of: holdingsManager.holdingsDisplay) { newHoldings in
+            updatePortfolio(with: newHoldings)
+        }
     }
     
     private func loadPortfolioData() {
@@ -226,40 +227,26 @@ struct PortfolioView: View {
             return
         }
         
-        let db = Firestore.firestore()
-        
-        // Load holdings
-        db.collection("users").document(userId).collection("holdings")
-            .getDocuments { snapshot, error in
-                isLoading = false
-                
-                if let error = error {
-                    self.errorMessage = "Failed to load holdings: \(error.localizedDescription)"
-                    return
-                }
-                
-                guard let documents = snapshot?.documents else {
-                    return
-                }
-                
-                self.holdings = documents.compactMap { doc in
-                    try? doc.data(as: Holding.self)
-                }
+        // Fetch holdings from HoldingsManager
+        holdingsManager.fetchHoldings { result in
+            isLoading = false
+            
+            switch result {
+            case .success(let holdings):
+                print("Successfully loaded \(holdings.count) holdings")
+                // Portfolio will be updated via onChange
+            case .failure(let error):
+                self.errorMessage = "Failed to load holdings: \(error.localizedDescription)"
             }
-        
-        // Load portfolio statistics
-        db.collection("users").document(userId).collection("portfolio")
-            .document("statistics")
-            .getDocument { snapshot, error in
-                if let error = error {
-                    print("Failed to load portfolio stats: \(error.localizedDescription)")
-                    return
-                }
-                
-                if let snapshot = snapshot, snapshot.exists {
-                    self.portfolioStats = try? snapshot.data(as: PortfolioStatistics.self)
-                }
-            }
+        }
+    }
+    
+    private func updatePortfolio(with holdings: [HoldingDisplay]) {
+        guard !holdings.isEmpty else {
+            portfolio = nil
+            return
+        }
+        portfolio = Portfolio(holdings: holdings)
     }
     
     private func handleLogout() {
@@ -308,34 +295,51 @@ struct StatCard: View {
 }
 
 struct HoldingCard: View {
-    let holding: Holding
+    let holding: HoldingDisplay
     
     var body: some View {
         HStack {
-            // Symbol
+            // Symbol Circle
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.25))
+                    .frame(width: 50, height: 50)
+                
+                Text(String(holding.symbol.prefix(2)))
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.white)
+            }
+            
+            // Symbol and quantity
             VStack(alignment: .leading, spacing: 4) {
                 Text(holding.symbol)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundStyle(.white)
                 
-                //Text("\(String(format: "%.2f", holding.quantity)) shares")
-                   // .font(.caption)
-                   // .foregroundStyle(Color.white.opacity(0.7))
+                Text("\(holding.quantity) shares")
+                    .font(.caption)
+                    .foregroundStyle(Color.white.opacity(0.7))
             }
+            .padding(.leading, 8)
             
             Spacer()
             
             // Price Info
             VStack(alignment: .trailing, spacing: 4) {
-                Text(String(format: "$%.2f", holding.totalCost))
-                    .font(.subheadline)
+                Text(String(format: "$%.2f", holding.currentPrice))
+                    .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundStyle(.white)
                 
-                Text("avg. price")
-                    .font(.caption)
-                    .foregroundStyle(Color.white.opacity(0.7))
+                HStack(spacing: 4) {
+                    Image(systemName: holding.unrealizedPnL >= 0 ? "arrow.up.right" : "arrow.down.right")
+                        .font(.caption)
+                    Text(String(format: "$%.2f", abs(holding.unrealizedPnL)))
+                        .font(.caption)
+                }
+                .foregroundStyle(holding.unrealizedPnL >= 0 ? Color.green : Color.red)
             }
             
             Image(systemName: "chevron.right")

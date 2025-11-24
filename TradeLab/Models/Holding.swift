@@ -17,7 +17,7 @@ struct Holding: Codable, Identifiable {
 }
 
 // Display model
-struct HoldingDisplay: Identifiable {
+struct HoldingDisplay: Identifiable, Equatable {
     let id: String
     let symbol: String
     let quantity: Int
