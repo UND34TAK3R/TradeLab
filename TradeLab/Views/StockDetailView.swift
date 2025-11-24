@@ -229,7 +229,7 @@ struct StockDetailView: View {
                 // Display balance
                 if let user = auth.currentUser {
                     HStack(spacing: 8) {
-                        Image(systemName: "creditcard.fill")
+                        Image(systemName: "wallet.pass.fill")
                             .font(.headline)
                         Text("Balance:")
                             .font(.headline)
@@ -362,7 +362,7 @@ struct TransactionSheetView: View {
     
     @Environment(\.dismiss) var dismiss
     @State private var quantity: String = ""
-    @StateObject private var transactionsManager = TransactionsManager.shared
+    @StateObject private var tradingManager = TradingManager.shared
     @StateObject private var auth = AuthManager.shared
     @StateObject private var dmManager = DarkModeManager.shared
     
@@ -375,6 +375,11 @@ struct TransactionSheetView: View {
         guard let qty = Int(quantity), qty > 0 else { return false }
         if transactionType == .sell {
             return qty <= maxShares
+        }
+        
+        // Check if the user has enough mulah
+        if transactionType == .buy {
+            return tradingManager.canAffordPurchase(totalCost: totalCost)
         }
         return true
     }
@@ -432,6 +437,21 @@ struct TransactionSheetView: View {
                                     .fontWeight(.bold)
                             }
                             .foregroundStyle(Color.themePrimary)
+                            
+                            // Show wallet
+                            if transactionType == .buy, let wallet = auth.currentUser?.wallet {
+                                Divider()
+                                HStack {
+                                    Text("Your Balance:")
+                                        .font(.subheadline)
+                                    Spacer()
+                                    Text("$\(String(format: "%.2f", wallet))")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(wallet >= totalCost ? Color.green : Color.red)
+                                }
+                                .foregroundStyle(Color.themeSecondary)
+                            }
                         }
                         .padding()
                         .background(Color.themeOverlaySecondary)
@@ -487,21 +507,27 @@ struct TransactionSheetView: View {
     private func executeTransaction() {
         guard let qty = Int(quantity), isValidTransaction else { return }
         
-        transactionsManager.createTransaction(
-            symbol: symbol,
-            quantity: qty,
-            date: Date(),
-            price: currentPrice,
-            type: transactionType,
-            totalCost: totalCost
-        ) { result in
-            switch result {
-            case .success:
-                onComplete(true, "\(transactionType == .buy ? "Purchase" : "Sale") successful!")
-                dismiss()
-            case .failure(let error):
-                onComplete(false, error.localizedDescription)
-                dismiss()
+        if transactionType == .buy {
+            tradingManager.buyStock(symbol: symbol, quantity: qty, price: currentPrice) { result in
+                switch result {
+                case .success:
+                    onComplete(true, "Successfully bought \(qty) shares of \(symbol)!")
+                    dismiss()
+                case .failure(let error):
+                    onComplete(false, error.localizedDescription)
+                    dismiss()
+                }
+            }
+        } else {
+            tradingManager.sellStock(symbol: symbol, quantity: qty, price: currentPrice) { result in
+                switch result {
+                case .success:
+                    onComplete(true, "Successfully sold \(qty) shares of \(symbol)")
+                    dismiss()
+                case .failure(let error):
+                    onComplete(false, error.localizedDescription)
+                    dismiss()
+                }
             }
         }
     }
