@@ -4,9 +4,9 @@
 //
 //  Created by Justin Pescador on 2025-11-12.
 //
-//
 //  TODO:
-//      - Stock page once we integrate it
+//      - Testing
+//      - Add TabScreen
 //
 
 import SwiftUI
@@ -15,6 +15,9 @@ struct StocksView: View {
     @StateObject private var socket = WebSocketsManager.shared
     @State private var searchText = ""
     @State private var isConnected = false
+    @State private var lastTradeCount = 0
+    @State private var isMarketOpen = true
+    @State private var noTradesTimer: Timer?
     
     // Filter stocks
     var filteredStocks: [StockPrice] {
@@ -50,9 +53,9 @@ struct StocksView: View {
                             // Check market connection
                             HStack(spacing: 8) {
                                 Circle()
-                                    .fill(isConnected ? Color.green : Color.red)
+                                    .fill(isMarketOpen ? Color.green : Color.red)
                                     .frame(width: 8, height: 8)
-                                Text(isConnected ? "Online" : "Offline")
+                                Text(isMarketOpen ? "Online" : "Offline")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.white.opacity(0.9))
                             }
@@ -105,9 +108,17 @@ struct StocksView: View {
                         Image(systemName: "chart.bar.xaxis")
                             .font(.system(size: 60))
                             .foregroundStyle(Color.white.opacity(0.7))
-                        Text(searchText.isEmpty ? "Fetching stocks..." : "No stocks found")
+                        Text(searchText.isEmpty ? "" : "No stocks found")
                             .font(.headline)
                             .foregroundStyle(Color.white.opacity(0.8))
+                        
+                        if !isMarketOpen {
+                            Text("The market is currently closed. Please come back between 8:00 AM and 4:00 PM EST.")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
+                        }
                         
                         if searchText.isEmpty && !isConnected {
                             ProgressView()
@@ -120,11 +131,13 @@ struct StocksView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
-                            ForEach(filteredStocks, id: \.symbol) {
-                                stock in
-                                StockRowView(stock: stock)
+                            ForEach(filteredStocks, id: \.symbol) { stockPrice in
+                                NavigationLink(destination: StockDetailView(symbol: stockPrice.symbol)) {
+                                    StockRowView(stock: stockPrice)
                             }
+                                .buttonStyle(PlainButtonStyle())
                         }
+                    }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 15)
                     }
@@ -136,10 +149,39 @@ struct StocksView: View {
                 socket.startCollectingTrades()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                     isConnected = true
+                    monitorTrades()
                 }
             }
         }
+        .onDisappear {
+            noTradesTimer?.invalidate()
+        }
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private func monitorTrades() {
+        // Check every 5 secs if there is a new trade
+        noTradesTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) {
+            _ in
+            let currentTradeCount = socket.trades.count
+            
+            if isConnected && currentTradeCount == lastTradeCount && currentTradeCount == 0 {
+                isMarketOpen = false
+            } else if currentTradeCount == lastTradeCount && currentTradeCount > 0 {
+                if let lastTrade = socket.trades.last {
+                    let lastTradeTimeInSecs = Double(lastTrade.timestamp)
+                    let lastTradeDate = Date(timeIntervalSince1970: lastTradeTimeInSecs)
+                    let timeSinceLastTrade = Date().timeIntervalSince(lastTradeDate)
+                    if timeSinceLastTrade > 30 {
+                        isMarketOpen = false
+                    }
+                }
+            } else {
+                // Receive trades
+                isMarketOpen = true
+            }
+            lastTradeCount = currentTradeCount
+        }
     }
 }
 
