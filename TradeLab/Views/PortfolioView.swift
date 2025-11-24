@@ -328,10 +328,10 @@ struct HoldingCard: View {
             
             // Price Info
             VStack(alignment: .trailing, spacing: 4) {
-                //Text(String(format: "$%.2f", holding.lastPrice))
-               //     .font(.subheadline)
-               //     .fontWeight(.semibold)
-                //    .foregroundStyle(.white)
+                Text(String(format: "$%.2f", holding.totalCost))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
                 
                 Text("avg. price")
                     .font(.caption)
