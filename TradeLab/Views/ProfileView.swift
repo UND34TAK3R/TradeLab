@@ -112,6 +112,15 @@ struct ProfileView: View {
                                 .background(Color.white.opacity(0.3))
                             
                             ProfileInfoRow(
+                                icon: "creditcard.fill",
+                                label: "Balance",
+                                value: "\(String(format: "%.2f", appUser.wallet))$"
+                            )
+                            
+                            Divider()
+                                .background(Color.white.opacity(0.3))
+                            
+                            ProfileInfoRow(
                                 icon: "moon.fill",
                                 label: "Dark Mode",
                                 value: appUser.isDarkMode ? "Enabled" : "Disabled"
