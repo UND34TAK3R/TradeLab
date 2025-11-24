@@ -16,6 +16,7 @@ struct StockDetailView: View {
     @StateObject private var transactionManager = TransactionsManager.shared
     @StateObject private var holdingsManager = HoldingsManager.shared
     @StateObject private var auth = AuthManager.shared
+    @StateObject private var dmManager = DarkModeManager.shared
     
     @State private var showTransactionsSheet = false
     @State private var transactionType: TransactionType = .buy
@@ -42,7 +43,7 @@ struct StockDetailView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                gradient: Gradient(colors: [Color.themeGradientStart, Color.themeGradientEnd]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -52,27 +53,27 @@ struct StockDetailView: View {
                 VStack(spacing: 20) {
                     ZStack {
                         Circle()
-                            .fill(Color.white.opacity(0.3))
+                            .fill(Color.themeOverlay)
                             .frame(width: 80, height: 80)
                         
                         Text(String(symbol.prefix(2)))
                             .font(.system(size: 32))
                             .fontWeight(.bold)
-                            .foregroundStyle(Color.white)
+                            .foregroundStyle(Color.themePrimary)
                     }
                     .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
                     
                     Text(symbol)
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundStyle(Color.white)
+                        .foregroundStyle(Color.themePrimary)
                     
                     if let stock = stockPrice {
                         VStack(spacing: 8) {
                             Text("$\(String(format: "%.2f", stock.currentPrice))")
                                 .font(.system(size: 48))
                                 .fontWeight(.bold)
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.themePrimary)
                             
                             if let percentChange = stock.percentageChange, let priceChange = stock.priceChange {
                                 HStack(spacing: 8) {
@@ -91,7 +92,7 @@ struct StockDetailView: View {
                         }
                     } else {
                         ProgressView()
-                            .tint(.white)
+                            .tint(Color.primary)
                             .scaleEffect(1.5)
                     }
                 }
@@ -103,33 +104,33 @@ struct StockDetailView: View {
                     VStack(spacing: 15) {
                         Text("Your Position")
                             .font(.headline)
-                            .foregroundStyle(Color.white.opacity(0.9))
+                            .foregroundStyle(Color.themeSecondary)
                         
                         HStack(spacing: 30) {
                             VStack(spacing: 5) {
                                 Text("Shares")
                                     .font(.caption)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("\(holding.quantity)")
                                     .font(.title2)
                                     .fontWeight(.bold)
-                                    .foregroundStyle(Color.white)
+                                    .foregroundStyle(Color.themePrimary)
                             }
                             
                             VStack(spacing: 5) {
                                 Text("Avg Cost")
                                     .font(.caption)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("$\(String(format: "%.2f", holding.avgCost))")
                                     .font(.title2)
                                     .fontWeight(.bold)
-                                    .foregroundStyle(Color.white)
+                                    .foregroundStyle(Color.themePrimary)
                             }
                             
                             VStack(spacing: 5) {
                                 Text("Total P/L")
                                     .font(.caption)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("$\(String(format: "%.2f", holding.unrealizedPnL))")
                                     .font(.title2)
                                     .fontWeight(.bold)
@@ -141,25 +142,25 @@ struct StockDetailView: View {
                             VStack(spacing: 5) {
                                 Text("Market Value")
                                     .font(.caption)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("$\(String(format: "%.2f", holding.totalValue))")
                                     .font(.headline)
-                                    .foregroundStyle(Color.white)
+                                    .foregroundStyle(Color.themePrimary)
                             }
                             
                             VStack(spacing: 5) {
                                 Text("Total Cost")
                                     .font(.caption)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("$\(String(format: "%.2f", holding.totalCost))")
                                     .font(.headline)
-                                    .foregroundStyle(Color.white)
+                                    .foregroundStyle(Color.themePrimary)
                             }
                             
                             VStack(spacing: 5) {
                                 Text("Return")
                                     .font(.caption)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("\(String(format: "%.2f", holding.unrealizedPnLPercent))%")
                                     .font(.headline)
                                     .foregroundStyle(holding.unrealizedPnLPercent >= 0 ? Color.green : Color.red)
@@ -167,7 +168,7 @@ struct StockDetailView: View {
                         }
                     }
                     .padding()
-                    .background(Color.white.opacity(0.2))
+                    .background(Color.themeOverlay)
                     .cornerRadius(15)
                     .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                     .padding(.horizontal, 20)
@@ -259,7 +260,7 @@ struct StockDetailView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Recent Trades")
                             .font(.headline)
-                            .foregroundStyle(Color.white)
+                            .foregroundStyle(Color.themePrimary)
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 8) {
@@ -268,11 +269,11 @@ struct StockDetailView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text("$\(String(format: "%.2f", trade.currentPrice))")
                                             .font(.headline)
-                                            .foregroundStyle(Color.white)
+                                            .foregroundStyle(Color.themePrimary)
                                         
                                         Text(formatTimestamp(trade.timestamp))
                                             .font(.caption)
-                                            .foregroundStyle(Color.white.opacity(0.7))
+                                            .foregroundStyle(Color.themeSecondary)
                                     }
                                     
                                     Spacer()
@@ -280,11 +281,11 @@ struct StockDetailView: View {
                                     VStack(alignment: .trailing, spacing: 4) {
                                         Text("Vol: \(String(format: "%.2f", trade.Volume))")
                                             .font(.caption)
-                                            .foregroundStyle(Color.white.opacity(0.8))
+                                            .foregroundStyle(Color.themeSecondary)
                                     }
                                 }
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.themeOverlay)
                                 .cornerRadius(10)
                             }
                         }
@@ -294,7 +295,7 @@ struct StockDetailView: View {
                 Spacer(minLength: 20)
             }
         }
-        
+        .preferredColorScheme(dmManager.isDarkMode ? .dark : .light)
         .sheet(isPresented: $showTransactionsSheet) {
             TransactionSheetView(
                 symbol: symbol,
@@ -316,6 +317,9 @@ struct StockDetailView: View {
             )
         }
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            dmManager.syncWithUser()
+        }
     }
 }
 
@@ -338,6 +342,7 @@ struct TransactionSheetView: View {
     @State private var quantity: String = ""
     @StateObject private var transactionsManager = TransactionsManager.shared
     @StateObject private var auth = AuthManager.shared
+    @StateObject private var dmManager = DarkModeManager.shared
     
     private var totalCost: Double {
         guard let qty = Int(quantity) else { return 0 }
@@ -367,16 +372,16 @@ struct TransactionSheetView: View {
                         Text("\(transactionType == .buy ? "Buy" : "Sell") \(symbol)")
                             .font(.title)
                             .fontWeight(.bold)
-                            .foregroundStyle(Color.white)
+                            .foregroundStyle(Color.themePrimary)
                         
                         Text("Current Price: $\(String(format: "%.2f", currentPrice))")
                             .font(.headline)
-                            .foregroundStyle(Color.white.opacity(0.9))
+                            .foregroundStyle(Color.themeSecondary)
                         
                         if transactionType == .sell {
                             Text("Available: \(maxShares) shares")
                                 .font(.subheadline)
-                                .foregroundStyle(Color.white.opacity(0.8))
+                                .foregroundStyle(Color.themeSecondary)
                         }
                     }
                     .padding(.top, 30)
@@ -385,13 +390,13 @@ struct TransactionSheetView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Quantity")
                                 .font(.headline)
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.themePrimary)
                             
                             TextField("Number of shares", text: $quantity)
                                 .keyboardType(.numberPad)
                                 .padding()
-                                .background(Color.white.opacity(0.2))
-                                .foregroundStyle(Color.white)
+                                .background(Color.themeOverlay)
+                                .foregroundStyle(Color.themePrimary)
                                 .cornerRadius(10)
                         }
                         
@@ -404,16 +409,16 @@ struct TransactionSheetView: View {
                                     .font(.title2)
                                     .fontWeight(.bold)
                             }
-                            .foregroundStyle(Color.white)
+                            .foregroundStyle(Color.themePrimary)
                         }
                         .padding()
-                        .background(Color.white.opacity(0.15))
+                        .background(Color.themeOverlaySecondary)
                         .cornerRadius(12)
                         
                         Button(action: executeTransaction) {
                             Text(transactionType == .buy ? "Confirm Purchase" : "Confirm Sale")
                                 .font(.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.themePrimary)
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(
@@ -433,7 +438,7 @@ struct TransactionSheetView: View {
                     }
                     .padding(.horizontal, 30)
                     .padding(.vertical, 30)
-                    .background(Color.white.opacity(0.15))
+                    .background(Color.themeOverlaySecondary)
                     .cornerRadius(20)
                     .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                     .padding(.horizontal, 20)
@@ -441,6 +446,7 @@ struct TransactionSheetView: View {
                     Spacer()
                 }
             }
+            .preferredColorScheme(dmManager.isDarkMode ? .dark : .light)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -449,6 +455,9 @@ struct TransactionSheetView: View {
                     }
                     .foregroundStyle(.white)
                 }
+            }
+            .onAppear {
+                dmManager.syncWithUser()
             }
         }
     }

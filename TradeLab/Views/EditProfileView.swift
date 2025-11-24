@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EditProfileView: View {
     @StateObject var auth = AuthManager.shared
+    @StateObject var dmManager = DarkModeManager.shared
     @Environment(\.dismiss) var dismiss
     @State private var displayName: String = ""
     @State private var newDisplayName: String = ""
@@ -16,7 +17,7 @@ struct EditProfileView: View {
         NavigationStack {
             ZStack {
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                    gradient: Gradient(colors: [Color.themeGradientStart.opacity(0.6), Color.themeGradientEnd.opacity(0.6)]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -36,7 +37,7 @@ struct EditProfileView: View {
                                     .clipShape(Circle())
                                     .overlay(
                                         Circle()
-                                            .stroke(Color.white.opacity(0.8), lineWidth: 3)
+                                            .stroke(Color.themeBorder.opacity(0.8), lineWidth: 3)
                                     )
                                     .shadow(color: .black.opacity(0.2), radius: 10)
                                     .overlay(
@@ -51,7 +52,7 @@ struct EditProfileView: View {
                             
                             Text("Tap to change photo")
                                 .font(.caption)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(Color.themeSecondary)
                         }
                         .padding(.top, 20)
                         
@@ -61,16 +62,16 @@ struct EditProfileView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Display Name")
                                     .font(.headline)
-                                    .foregroundStyle(.white.opacity(0.9))
+                                    .foregroundStyle(Color.themePrimary)
                                 
                                 TextField("Enter display name", text: $newDisplayName)
                                     .padding(12)
-                                    .background(Color.white.opacity(0.2))
+                                    .background(Color.themeOverlay)
                                     .cornerRadius(10)
                                     .foregroundColor(.white)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.white.opacity(0.4), lineWidth: 1)
+                                            .stroke(Color.themeBorder, lineWidth: 1)
                                     )
                             }
                             
@@ -79,10 +80,10 @@ struct EditProfileView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Dark Mode")
                                         .font(.headline)
-                                        .foregroundStyle(.white.opacity(0.9))
+                                        .foregroundStyle(Color.themePrimary)
                                     Text("Enable dark theme")
                                         .font(.caption)
-                                        .foregroundStyle(.white.opacity(0.6))
+                                        .foregroundStyle(Color.themeSecondary)
                                 }
                                 
                                 Spacer()
@@ -90,17 +91,22 @@ struct EditProfileView: View {
                                 Toggle("", isOn: $isNewDarkMode)
                                     .labelsHidden()
                                     .tint(.blue)
+                                    .onChange(of: isNewDarkMode) { newValue in
+                                        dmManager.isDarkMode = newValue
+                                    }
                             }
                             .padding(12)
-                            .background(Color.white.opacity(0.15))
+                            .background(Color.themeOverlay.opacity(0.75))
                             .cornerRadius(10)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                    .stroke(Color.themeBorder.opacity(0.75), lineWidth: 1)
                             )
                         }
                         .padding(.horizontal, 20)
+                        
                         Spacer()
+                        
                         // Save Button
                         NavigationLink(destination: ProfileView()){
                             Button(action: {

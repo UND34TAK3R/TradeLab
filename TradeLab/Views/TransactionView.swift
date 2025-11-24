@@ -18,6 +18,7 @@ import FirebaseFirestore
 
 struct TransactionView: View {
     @StateObject var auth = AuthManager.shared
+    @StateObject var dmManager = DarkModeManager.shared
     @State private var transactions: [Transaction] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -25,7 +26,7 @@ struct TransactionView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                gradient: Gradient(colors: [Color.themeGradientStart, Color.themeGradientEnd]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -37,18 +38,18 @@ struct TransactionView: View {
                     VStack(spacing: 8) {
                         ZStack {
                             Circle()
-                                .fill(Color.white.opacity(0.3))
+                                .fill(Color.themeOverlay)
                                 .frame(width: 90, height: 90)
                             Image(systemName: "chart.line.uptrend.xyaxis")
                                 .font(.system(size: 50))
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.themePrimary)
                         }
                         .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
                         
                         Text("Transaction History")
                             .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.themePrimary)
                     }
                     .padding(.top, 60)
                     .padding(.bottom, 20)
@@ -65,13 +66,13 @@ struct TransactionView: View {
                             VStack(spacing: 15) {
                                 Image(systemName: "tray.fill")
                                     .font(.system(size: 50))
-                                    .foregroundStyle(Color.white.opacity(0.6))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("No Transactions Yet")
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.themePrimary)
                                 Text("Your trades will appear here")
                                     .font(.subheadline)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                             }
                             .padding(.vertical, 40)
                         } else {
@@ -98,7 +99,7 @@ struct TransactionView: View {
                     }
                     .padding(.horizontal, 30)
                     .padding(.vertical, 40)
-                    .background(Color.white.opacity(0.15))
+                    .background(Color.themeOverlaySecondary)
                     .cornerRadius(20)
                     .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                     
@@ -107,7 +108,9 @@ struct TransactionView: View {
                 .padding(.horizontal, 20)
             }
         }
+        .preferredColorScheme(dmManager.isDarkMode ? .dark : .light)
         .onAppear {
+            dmManager.syncWithUser()
             loadTransactions()
         }
     }

@@ -13,6 +13,7 @@ import SwiftUI
 
 struct StocksView: View {
     @StateObject private var socket = WebSocketsManager.shared
+    @StateObject private var dmManager = DarkModeManager.shared
     @State private var searchText = ""
     @State private var isConnected = false
     @State private var lastTradeCount = 0
@@ -34,7 +35,7 @@ struct StocksView: View {
         // BG
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                gradient: Gradient(colors: [Color.themeGradientStart, Color.themeGradientEnd]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -48,7 +49,7 @@ struct StocksView: View {
                             Text("Market Watch")
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.themePrimary)
                             
                             // Check market connection
                             HStack(spacing: 8) {
@@ -57,7 +58,7 @@ struct StocksView: View {
                                     .frame(width: 8, height: 8)
                                 Text(isMarketOpen ? "Online" : "Offline")
                                     .font(.subheadline)
-                                    .foregroundStyle(Color.white.opacity(0.9))
+                                    .foregroundStyle(Color.themeSecondary)
                             }
                         }
                         
@@ -70,7 +71,7 @@ struct StocksView: View {
                                 .frame(width: 50, height: 50)
                             Image(systemName: "chart.line.uptrend.xyaxis")
                                 .font(.system(size: 24))
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.themePrimary)
                         }
                         .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                         
@@ -80,20 +81,20 @@ struct StocksView: View {
                     
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundStyle(Color.white.opacity(0.7))
+                            .foregroundStyle(Color.themeSecondary)
                         TextField("Search stocks...", text: $searchText)
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.themePrimary)
                                 .autocapitalization(.allCharacters)
                         
                         if !searchText.isEmpty {
                             Button(action: { searchText = ""}) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                             }
                         }
                     }
                     .padding()
-                    .background(Color.white.opacity(0.2))
+                    .background(Color.themeOverlay)
                     .cornerRadius(25)
                     .padding(.bottom, 15)
                     .padding(.horizontal, 20)
@@ -107,22 +108,22 @@ struct StocksView: View {
                         
                         Image(systemName: "chart.bar.xaxis")
                             .font(.system(size: 60))
-                            .foregroundStyle(Color.white.opacity(0.7))
+                            .foregroundStyle(Color.themeSecondary)
                         Text(searchText.isEmpty ? "" : "No stocks found")
                             .font(.headline)
-                            .foregroundStyle(Color.white.opacity(0.8))
+                            .foregroundStyle(Color.themeSecondary)
                         
                         if !isMarketOpen {
                             Text("The market is currently closed. Please come back between 8:00 AM and 4:00 PM EST.")
                                 .font(.subheadline)
-                                .foregroundStyle(Color.white.opacity(0.6))
+                                .foregroundStyle(Color.themeSecondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 40)
                         }
                         
                         if searchText.isEmpty && !isConnected {
                             ProgressView()
-                                .tint(.white)
+                                .tint(Color.themePrimary)
                                 .scaleEffect(1.5)
                                 .padding(.top, 10)
                         }
@@ -144,7 +145,9 @@ struct StocksView: View {
                 }
             }
         }
+        .preferredColorScheme(dmManager.isDarkMode ? .dark : .light)
         .onAppear {
+            dmManager.syncWithUser()
             if !isConnected {
                 socket.startCollectingTrades()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -202,12 +205,12 @@ struct StockRowView: View {
         HStack(spacing: 15) {
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.25))
+                    .fill(Color.themeOverlay)
                     .frame(width: 55, height: 55)
                 Text(String(stock.symbol.prefix(2)))
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(Color.themePrimary)
             }
             
             // Stock info
@@ -215,12 +218,12 @@ struct StockRowView: View {
                 Text(stock.symbol)
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(Color.themePrimary)
                 
                 if let previous = stock.previousPrice {
                     Text("Prev: $\(String(format: "%.2f", previous))")
                         .font(.caption)
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .foregroundStyle(Color.themeSecondary)
                 }
             }
             
@@ -230,7 +233,7 @@ struct StockRowView: View {
                 Text("$\(String(format: "%.2f", stock.currentPrice))")
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(Color.themePrimary)
                 
                 if let percentageChange = stock.percentageChange {
                     HStack(spacing: 4) {
@@ -250,7 +253,7 @@ struct StockRowView: View {
             }
         }
         .padding()
-        .background(Color.white.opacity(0.15))
+        .background(Color.themeOverlaySecondary)
         .cornerRadius(15)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
     }

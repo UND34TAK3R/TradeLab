@@ -23,6 +23,7 @@ struct PortfolioView: View {
     @StateObject var auth = AuthManager.shared
     @StateObject var holdingsManager = HoldingsManager.shared
     @StateObject var webSocketManager = WebSocketsManager.shared
+    @StateObject var dmManager = DarkModeManager.shared
     
     @State private var portfolio: Portfolio?
     @State private var isLoading = true
@@ -32,7 +33,7 @@ struct PortfolioView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                gradient: Gradient(colors: [Color.themeGradientStart, Color.themeGradientEnd]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -44,7 +45,7 @@ struct PortfolioView: View {
                     VStack(spacing: 15) {
                         ZStack {
                             Circle()
-                                .fill(Color.white.opacity(0.3))
+                                .fill(Color.themeOverlay)
                                 .frame(width: 90, height: 90)
                             
                             if let pictureString = auth.currentUser?.picture,
@@ -58,7 +59,7 @@ struct PortfolioView: View {
                             } else {
                                 Image(systemName: "person.circle.fill")
                                     .font(.system(size: 50))
-                                    .foregroundStyle(Color.white)
+                                    .foregroundStyle(Color.themePrimary)
                             }
                         }
                         .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
@@ -66,7 +67,7 @@ struct PortfolioView: View {
                         Text("Welcome back, \(auth.currentUser?.displayName ?? "user")!")
                             .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.themePrimary)
 
                     }
                     .padding(.top, 60)
@@ -77,22 +78,22 @@ struct PortfolioView: View {
                         VStack(spacing: 20) {
                             Text("Portfolio Overview")
                                 .font(.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.themePrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             // Total Value
                             VStack(spacing: 8) {
                                 Text("Total Portfolio Value")
                                     .font(.caption)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text(String(format: "$%.2f", portfolio.totalValue))
                                     .font(.system(size: 36, weight: .bold))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.themePrimary)
                             }
                             .padding(.vertical, 10)
                             
                             Divider()
-                                .background(Color.white.opacity(0.3))
+                                .background(Color.themeBorderSecondary)
                             
                             // Stats Grid
                             VStack(spacing: 12) {
@@ -131,7 +132,7 @@ struct PortfolioView: View {
                         }
                         .padding(.horizontal, 30)
                         .padding(.vertical, 40)
-                        .background(Color.white.opacity(0.15))
+                        .background(Color.themeOverlaySecondary)
                         .cornerRadius(20)
                         .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                     }
@@ -141,29 +142,29 @@ struct PortfolioView: View {
                         HStack {
                             Text("Your Holdings")
                                 .font(.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.themePrimary)
                             Spacer()
                             Text("\(holdingsManager.holdingsDisplay.count) stocks")
                                 .font(.subheadline)
-                                .foregroundStyle(Color.white.opacity(0.7))
+                                .foregroundStyle(Color.themeSecondary)
                         }
                         
                         if isLoading {
                             ProgressView()
                                 .scaleEffect(1.5)
-                                .tint(.white)
+                                .tint(Color.themePrimary)
                                 .padding(.vertical, 40)
                         } else if holdingsManager.holdingsDisplay.isEmpty {
                             VStack(spacing: 15) {
                                 Image(systemName: "chart.line.flattrend.xyaxis")
                                     .font(.system(size: 50))
-                                    .foregroundStyle(Color.white.opacity(0.6))
+                                    .foregroundStyle(Color.themeSecondary)
                                 Text("No Holdings Yet")
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.themePrimary)
                                 Text("Start trading to build your portfolio")
                                     .font(.subheadline)
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(Color.themeSecondary)
                             }
                             .padding(.vertical, 40)
                         } else {
@@ -179,7 +180,7 @@ struct PortfolioView: View {
                     }
                     .padding(.horizontal, 30)
                     .padding(.vertical, 40)
-                    .background(Color.white.opacity(0.15))
+                    .background(Color.themeOverlaySecondary)
                     .cornerRadius(20)
                     .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                     
@@ -203,6 +204,7 @@ struct PortfolioView: View {
                 .padding(.horizontal, 20)
             }
         }
+        .preferredColorScheme(dmManager.isDarkMode ? .dark : .light)
         .alert("Logout", isPresented: $showLogoutAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Logout", role: .destructive) {
@@ -212,6 +214,7 @@ struct PortfolioView: View {
             Text("Are you sure you want to logout?")
         }
         .onAppear {
+            dmManager.syncWithUser()
             loadPortfolioData()
         }
         .onChange(of: holdingsManager.holdingsDisplay) { newHoldings in
@@ -275,20 +278,20 @@ struct StatCard: View {
             
             Text(title)
                 .font(.caption)
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(Color.themeSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             Text(value)
                 .font(.headline)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.themePrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding()
-        .background(Color.white.opacity(0.1))
+        .background(Color.themeOverlay)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                .stroke(Color.themeBorderSecondary, lineWidth: 1)
         )
     }
 }
@@ -301,13 +304,13 @@ struct HoldingCard: View {
             // Symbol Circle
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.25))
+                    .fill(Color.themeOverlay)
                     .frame(width: 50, height: 50)
                 
                 Text(String(holding.symbol.prefix(2)))
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(Color.themePrimary)
             }
             
             // Symbol and quantity
@@ -315,11 +318,11 @@ struct HoldingCard: View {
                 Text(holding.symbol)
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.themePrimary)
                 
                 Text("\(holding.quantity) shares")
                     .font(.caption)
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(Color.themeSecondary)
             }
             .padding(.leading, 8)
             
@@ -330,7 +333,7 @@ struct HoldingCard: View {
                 Text(String(format: "$%.2f", holding.currentPrice))
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.themePrimary)
                 
                 HStack(spacing: 4) {
                     Image(systemName: holding.unrealizedPnL >= 0 ? "arrow.up.right" : "arrow.down.right")
@@ -342,7 +345,7 @@ struct HoldingCard: View {
             }
             
             Image(systemName: "chevron.right")
-                .foregroundStyle(Color.white.opacity(0.5))
+                .foregroundStyle(Color.themeSecondary)
                 .padding(.leading, 8)
         }
         .padding()

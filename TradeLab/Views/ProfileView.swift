@@ -14,6 +14,7 @@ import FirebaseFirestore
 
 struct ProfileView: View {
     @StateObject var auth = AuthManager.shared
+    @StateObject var dmManager = DarkModeManager.shared
     @State private var appUser: AppUser?
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -21,7 +22,7 @@ struct ProfileView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                gradient: Gradient(colors: [Color.themeGradientStart, Color.themeGradientEnd]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -32,7 +33,7 @@ struct ProfileView: View {
                     if isLoading {
                         ProgressView()
                             .scaleEffect(1.5)
-                            .tint(.white)
+                            .tint(Color.themePrimary)
                             .padding(.top, 100)
                     } else if let appUser = appUser {
                         // Profile Header
@@ -40,7 +41,7 @@ struct ProfileView: View {
                             // Profile Picture
                             ZStack {
                                 Circle()
-                                    .fill(Color.white.opacity(0.3))
+                                    .fill(Color.themeOverlay)
                                     .frame(width: 120, height: 120)
                                 
                                 if let pictureURL = appUser.picture, !pictureURL.isEmpty {
@@ -53,12 +54,12 @@ struct ProfileView: View {
                                     } placeholder: {
                                         Image(systemName: "person.circle.fill")
                                             .font(.system(size: 60))
-                                            .foregroundStyle(Color.white)
+                                            .foregroundStyle(Color.themePrimary)
                                     }
                                 } else {
                                     Image(systemName: "person.circle.fill")
                                         .font(.system(size: 60))
-                                        .foregroundStyle(Color.white)
+                                        .foregroundStyle(Color.themePrimary)
                                 }
                             }
                             .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
@@ -67,12 +68,12 @@ struct ProfileView: View {
                             Text(appUser.displayName)
                                 .font(.title)
                                 .fontWeight(.bold)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.themePrimary)
                             
                             // Email
                             Text(appUser.email)
                                 .font(.subheadline)
-                                .foregroundStyle(Color.white.opacity(0.8))
+                                .foregroundStyle(Color.themeSecondary)
                             
                             // Active Status Badge
                             HStack {
@@ -81,11 +82,11 @@ struct ProfileView: View {
                                     .frame(width: 10, height: 10)
                                 Text(appUser.isActive ? "Active" : "Inactive")
                                     .font(.caption)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.themePrimary)
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(Color.white.opacity(0.2))
+                            .background(Color.themeOverlay)
                             .cornerRadius(20)
                         }
                         .padding(.top, 60)
@@ -100,7 +101,7 @@ struct ProfileView: View {
                             )
                             
                             Divider()
-                                .background(Color.white.opacity(0.3))
+                                .background(Color.themeBorderSecondary)
                             
                             ProfileInfoRow(
                                 icon: "person.fill",
@@ -109,7 +110,7 @@ struct ProfileView: View {
                             )
                             
                             Divider()
-                                .background(Color.white.opacity(0.3))
+                                .background(Color.themeBorderSecondary)
                             
                             ProfileInfoRow(
                                 icon: "creditcard.fill",
@@ -118,7 +119,7 @@ struct ProfileView: View {
                             )
                             
                             Divider()
-                                .background(Color.white.opacity(0.3))
+                                .background(Color.themeBorderSecondary)
                             
                             ProfileInfoRow(
                                 icon: "moon.fill",
@@ -127,7 +128,7 @@ struct ProfileView: View {
                             )
                             
                             Divider()
-                                .background(Color.white.opacity(0.3))
+                                .background(Color.themeBorderSecondary)
                             
                             ProfileInfoRow(
                                 icon: "checkmark.circle.fill",
@@ -142,7 +143,7 @@ struct ProfileView: View {
                                     Text("Edit Profile")
                                 }
                                 .font(.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.themePrimary)
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(
@@ -164,7 +165,7 @@ struct ProfileView: View {
                                     Text("Logout")
                                 }
                                 .font(.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.themePrimary)
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(Color.red.opacity(0.7))
@@ -174,7 +175,7 @@ struct ProfileView: View {
                         }
                         .padding(.horizontal, 30)
                         .padding(.vertical, 40)
-                        .background(Color.white.opacity(0.15))
+                        .background(Color.themeOverlaySecondary)
                         .cornerRadius(20)
                         .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                         
@@ -197,7 +198,9 @@ struct ProfileView: View {
                 .padding(.horizontal, 20)
             }
         }
+        .preferredColorScheme(dmManager.isDarkMode ? .dark : .light)
         .onAppear {
+            dmManager.syncWithUser()
             loadUserProfile()
         }
     }
@@ -244,16 +247,16 @@ struct ProfileInfoRow: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(Color.themeSecondary)
                 .frame(width: 25)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(label)
                     .font(.caption)
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(Color.themeSecondary)
                 Text(value)
                     .font(.body)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.themePrimary)
             }
             
             Spacer()
