@@ -17,7 +17,7 @@ class DarkModeManager: ObservableObject {
     }
     
     private init() {
-        self.isDarkMode = UserDefaults.standard.bool(forKey: "isDarkMode")
+        self.isDarkMode = UserDefaults.standard.bool(forKey:  "isDarkMode")
     }
     
     func syncWithUser() {
