@@ -29,12 +29,6 @@ class JsonParser{
             switch response.type{
             case "trade":
                 if let newTrades = response.data, !newTrades.isEmpty{
-                    //check how many trades parsed (Remove later )
-                    print("Parsed \(newTrades.count) trades")
-                    //Log first trade parsed(Remove later)
-                    if let first = newTrades.first{
-                        print("Latest Symbol: \(first.symbol) price: \(first.currentPrice)")
-                    }
                     onTradesParsed?(newTrades)
                 }else{
                     print("Trade message with no data")
