@@ -67,10 +67,7 @@ struct PortfolioView: View {
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundStyle(.white)
-                        
-                        Text(auth.currentUser?.email ?? "")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.white.opacity(0.8))
+
                     }
                     .padding(.top, 60)
                     .padding(.bottom, 20)
@@ -179,19 +176,6 @@ struct PortfolioView: View {
                                 }
                             }
                         }
-                        
-                        if let errorMessage = errorMessage {
-                            HStack {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                Text(errorMessage)
-                                    .font(.subheadline)
-                            }
-                            .foregroundStyle(Color.red)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.red.opacity(0.1))
-                            .cornerRadius(10)
-                        }
                     }
                     .padding(.horizontal, 30)
                     .padding(.vertical, 40)
@@ -199,7 +183,22 @@ struct PortfolioView: View {
                     .cornerRadius(20)
                     .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                     
+                    if let errorMessage = errorMessage {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                            Text(errorMessage)
+                                .font(.subheadline)
+                        }
+                        .foregroundStyle(Color.red)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(10)
+                    }
+                    
                     Spacer(minLength: 20)
+                    
+                    
                 }
                 .padding(.horizontal, 20)
             }
