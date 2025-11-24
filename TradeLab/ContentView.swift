@@ -11,6 +11,7 @@ struct ContentView: View {
     @StateObject private var socket = WebSocketsManager.shared
     @StateObject private var transactions = TransactionsManager.shared
     @StateObject private var holdings = HoldingsManager.shared
+    @StateObject private var trading = TradingManager.shared
     @State private var isLoaded = false
     
     var body: some View {

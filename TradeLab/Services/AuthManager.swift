@@ -37,7 +37,7 @@ class AuthManager: ObservableObject{
             //Convert image data to encoded String
             let imageString = imageData.base64EncodedString()
             // create app user obj
-            let appUser = AppUser(id: uid, email: email, displayName: displayName, picture: imageString)
+            let appUser = AppUser(id: uid, email: email, displayName: displayName, picture: imageString, wallet: 10000)
             // database query
             do{
                 try self.db.collection("users").document(uid).setData(from: appUser){
@@ -77,12 +77,13 @@ class AuthManager: ObservableObject{
                             //auth service mismatch with the firestore
                             let email = result?.user.email ?? "unknown"
                             let name = result?.user.displayName ?? "Anonymous"
+                            let wallet = 10000.00
                             guard let defaultImage = UIImage(named: "default-profile"),
                                   let imageData = defaultImage.jpegData(compressionQuality: 0.8)else{
                                 return completion(.failure(SimpleError("Unable to compress profile image")))
                             }
                             let imageString = imageData.base64EncodedString()
-                            let appUser = AppUser(id: user.uid, email: email, displayName: name, picture: imageString)
+                            let appUser = AppUser(id: user.uid, email: email, displayName: name, picture: imageString, wallet: wallet)
                             
                             //push it to firestore
                             do {
