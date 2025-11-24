@@ -24,66 +24,72 @@ class TradingManager: ObservableObject {
     
     //Buy stocks
     func buyStock(symbol: String, quantity: Int, price: Double, completion: @escaping (Result<Void, Error>) -> Void) {
-            guard quantity > 0 else {
-                return completion(.failure(SimpleError("Quantity must be greater than 0")))
+        
+        guard quantity > 0 else {
+            return completion(.failure(SimpleError("Quantity must be greater than 0")))
+        }
+        
+        guard price > 0 else {
+            return completion(.failure(SimpleError("Price must be greater than 0")))
+        }
+        
+        let totalCost = Double(quantity) * price
+        print("💵 Total cost: \(totalCost)")
+        
+        // Check if user has enough funds
+        guard let wallet = auth.currentUser?.wallet else {
+            return completion(.failure(SimpleError("Unable to access wallet")))
+        }
+        
+        guard wallet >= totalCost else {
+            errorMessage = "Insufficient funds. You need $\(String(format: "%.2f", totalCost)) but only have $\(String(format: "%.2f", wallet))"
+            return completion(.failure(SimpleError("Insufficient funds")))
+        }
+        
+        isProcessing = true
+        errorMessage = nil
+        successMessage = nil
+        
+        // Deduct from wallet
+        updateWallet(amount: -totalCost) { [weak self] walletResult in
+            guard let self = self else {
+                return
             }
             
-            guard price > 0 else {
-                return completion(.failure(SimpleError("Price must be greater than 0")))
-            }
-            
-            let totalCost = Double(quantity) * price
-            
-            // Check if user has enough funds
-            guard let wallet = auth.currentUser?.wallet else {
-                return completion(.failure(SimpleError("Unable to access wallet")))
-            }
-            
-            guard wallet >= totalCost else {
-                errorMessage = "Insufficient funds. You need $\(String(format: "%.2f", totalCost)) but only have $\(String(format: "%.2f", wallet))"
-                return completion(.failure(SimpleError("Insufficient funds")))
-            }
-            
-            isProcessing = true
-            errorMessage = nil
-            successMessage = nil
-            
-            // Deduct from wallet
-            updateWallet(amount: -totalCost) { [weak self] walletResult in
-                guard let self = self else { return }
-                
-                switch walletResult {
-                case .success:
-                    // Create transaction
-                    self.transactions.createTransaction(
-                        symbol: symbol.uppercased(),
-                        quantity: quantity,
-                        date: Date(),
-                        price: price,
-                        type: .buy,
-                        totalCost: totalCost
-                    ) { result in
-                        self.isProcessing = false
-                        
-                        switch result {
-                        case .success:
-                            self.successMessage = "Successfully bought \(quantity) shares of \(symbol) at $\(String(format: "%.2f", price))"
-                            completion(.success(()))
-                        case .failure(let error):
-                            // Rollback wallet if transaction fails
-                            self.updateWallet(amount: totalCost) { _ in }
-                            self.errorMessage = error.localizedDescription
-                            completion(.failure(error))
-                        }
-                    }
-                    
-                case .failure(let error):
+            switch walletResult {
+            case .success:
+                // Create transaction
+                self.transactions.createTransaction(
+                    symbol: symbol.uppercased(),
+                    quantity: quantity,
+                    date: Date(),
+                    price: price,
+                    type: .buy,
+                    totalCost: totalCost
+                ) { result in
                     self.isProcessing = false
-                    self.errorMessage = error.localizedDescription
-                    completion(.failure(error))
+                    
+                    switch result {
+                    case .success:
+                        self.successMessage = "Successfully bought \(quantity) shares of \(symbol) at $\(String(format: "%.2f", price))"
+                        completion(.success(()))
+                    case .failure(let error):
+                        // Rollback wallet if transaction fails
+                        self.updateWallet(amount: totalCost) { rollbackResult in
+                            print("Rollback completed: \(rollbackResult)")
+                        }
+                        self.errorMessage = error.localizedDescription
+                        completion(.failure(error))
+                    }
                 }
+                
+            case .failure(let error):
+                self.isProcessing = false
+                self.errorMessage = error.localizedDescription
+                completion(.failure(error))
             }
         }
+    }
     
     // Sell stock
         func sellStock(symbol: String, quantity: Int, price: Double, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -149,33 +155,39 @@ class TradingManager: ObservableObject {
     
     
     private func updateWallet(amount: Double, completion: @escaping (Result<Void, Error>) -> Void) {
-            guard let uid = auth.currentUser?.id else {
-                return completion(.failure(SimpleError("User not authenticated")))
-            }
-            
-            guard let currentWallet = auth.currentUser?.wallet else {
-                return completion(.failure(SimpleError("Unable to access wallet")))
-            }
-            
-            let newBalance = currentWallet + amount
-            
-            guard newBalance >= 0 else {
-                return completion(.failure(SimpleError("Insufficient funds")))
-            }
-            
-            let db = Firestore.firestore()
-            db.collection("users").document(uid).updateData([
-                "wallet": newBalance
-            ]) { [weak self] error in
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    // Update local user object
-                    self?.auth.currentUser?.wallet = newBalance
-                    completion(.success(()))
-                }
-            }
+      
+        
+        guard let uid = auth.currentUser?.id else {
+          
+            return completion(.failure(SimpleError("User not authenticated")))
         }
+      
+        
+        guard let currentWallet = auth.currentUser?.wallet else {
+         
+            return completion(.failure(SimpleError("Unable to access wallet")))
+        }
+      
+        
+        let newBalance = currentWallet + amount
+      
+        
+        guard newBalance >= 0 else {
+          
+            return completion(.failure(SimpleError("Insufficient funds")))
+        }
+        
+    
+        auth.updateWallet(newWallet: newBalance, completion: { result in
+         
+            switch result {
+            case .success:
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        })
+    }
     
     // Get max sellable quantity for a symbol
     func getMaxSellableQuantity(for symbol: String) -> Int {
