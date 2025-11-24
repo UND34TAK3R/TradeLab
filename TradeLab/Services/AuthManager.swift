@@ -210,4 +210,26 @@ class AuthManager: ObservableObject{
             }
         }
     }
+    
+    
+    func updateWallet(newWallet: Double, completion: @escaping (Result<Void, Error>)-> Void){
+        print("BUY FUNCTION CALLED")
+        print("UserID:", Auth.auth().currentUser?.uid ?? "nil")
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("uid collection not found")
+            return completion(.success(()))
+        }
+        db.collection("users").document(uid).updateData(["wallet": newWallet]){
+            error in
+            if let error = error{
+                print("Wallet not updated")
+                return completion(.failure(error))
+            }else{
+                self.fetchCurrentAppUser{ _ in
+                    completion(.success(()))
+                    print("Wallet updated successfully")
+                }
+            }
+        }
+    }
 }

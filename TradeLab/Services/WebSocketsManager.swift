@@ -8,39 +8,41 @@
 import Foundation
 import Combine
 
-class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject{
+class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject {
     
     @Published var trades: [Trade] = []
     @Published var stockPrices: [String: StockPrice] = [:]
     
-    //singleton pattern
     static let shared = WebSocketsManager()
     
     private let jsonParser = JsonParser()
-    
     private var webSocketTask: URLSessionWebSocketTask?
+    private var session: URLSession?  // Keep session as property
     
     var onMessage: ((String?, Data?) -> Void)?
     
-    override init(){
+    override init() {
         super.init()
         
-        //Setup Parser callback(connects the JsonParser and WebSocketsManager)
+        // Setup URLSession once
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 30
+        session = URLSession(configuration: config, delegate: self, delegateQueue: OperationQueue.main)
+        
+        // Setup Parser callback
         jsonParser.onTradesParsed = { [weak self] trades in
             DispatchQueue.main.async {
                 self?.trades.append(contentsOf: trades)
-                //Update Price Tracking
                 for trade in trades {
-                    if let exist = self?.stockPrices[trade.symbol]{
-                        //Update Stock Price fields
+                    if let exist = self?.stockPrices[trade.symbol] {
                         self?.stockPrices[trade.symbol] = StockPrice(
                             symbol: trade.symbol,
                             currentPrice: trade.currentPrice,
                             previousPrice: exist.currentPrice,
                             timestamp: Date()
                         )
-                    }else{
-                        //If there are none before
+                    } else {
                         self?.stockPrices[trade.symbol] = StockPrice(
                             symbol: trade.symbol,
                             currentPrice: trade.currentPrice,
@@ -53,25 +55,28 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
         }
     }
     
-    //Connection with url String
-    func connect(urlString: String){
-        guard let url = URL(string: urlString) else{return}
-        let session = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue.main)
-        webSocketTask = session.webSocketTask(with: url)
-        webSocketTask?.resume()//Start connection process
+    func connect(urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        
+        // Cancel existing connection if any
+        disconnect()
+        
+        // Use the existing session
+        webSocketTask = session?.webSocketTask(with: url)
+        webSocketTask?.resume()
     }
     
-    //Disconnect from websocket
-    func disconnect(){
+    func disconnect() {
         webSocketTask?.cancel(with: .goingAway, reason: nil)
+        webSocketTask = nil
     }
     
-    //Recieve Message (FETCH DATA)
     func receiveMessage() {
         webSocketTask?.receive { [weak self] result in
             switch result {
             case .failure(let error):
                 print("Error receiving message: \(error)")
+                // Don't call receiveMessage again on error
             case .success(let message):
                 switch message {
                 case .string(let text):
@@ -81,9 +86,9 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
                 @unknown default:
                     break
                 }
+                // Only continue listening if successful
+                self?.receiveMessage()
             }
-            //Call receive again to listen for the next message
-            self?.receiveMessage()
         }
     }
     
@@ -95,37 +100,39 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
         }
     }
     
-    // FUNCTIONS FOR URLSessionWebSocketDelegate METHODS
+    // MARK: - URLSessionWebSocketDelegate
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         print("WebSocket connected.")
-        // Start recieveing messages immediately after connection is established
-        receiveMessage()
+        // Add a small delay to ensure connection is fully established
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.receiveMessage()
+        }
     }
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         print("WebSocket connection closed. Code: \(closeCode)")
+        if let reason = reason, let reasonString = String(data: reason, encoding: .utf8) {
+            print("Reason: \(reasonString)")
+        }
     }
     
-    //FUNCTIONS TO RETRIEVE/DECODE DATA
+    // MARK: - Data Collection
     
-    func startCollectingTrades(){
-        self.onMessage = {[weak self] text, _ in
+    func startCollectingTrades() {
+        self.onMessage = { [weak self] text, _ in
             guard let text = text else { return }
-            
-            //Finnhub JSON data
-            //print("Finnhub data:", text)
-            
-            //Parse data with Json Parser
             self?.jsonParser.parseTradeData(text)
         }
+        
         let apiKey = Secrets.FHAPIKey
         self.connect(urlString: "wss://ws.finnhub.io?token=\(apiKey)")
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            for symbol in StockSymbols.Top50{
+        // Increased delay to ensure connection is established
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+            for symbol in StockSymbols.Top50 {
                 let subscribeMessage = "{\"type\":\"subscribe\",\"symbol\":\"\(symbol)\"}"
-                self.send(text: subscribeMessage)
+                self?.send(text: subscribeMessage)
             }
         }
     }
