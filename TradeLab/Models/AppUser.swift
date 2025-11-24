@@ -16,4 +16,5 @@ struct AppUser: Identifiable, Codable {
     var picture: String? = nil
     var isDarkMode: Bool = false
     var isActive: Bool = true
+    var wallet: Double
 }

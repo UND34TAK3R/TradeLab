@@ -9,11 +9,16 @@ import Foundation
 import Combine
 import FirebaseFirestore
 
+import Foundation
+import Combine
+import FirebaseFirestore
+
 class HoldingsManager: ObservableObject {
     static let shared = HoldingsManager()
     
     @Published var holdings: [Holding] = []
     @Published var holdingsDisplay: [HoldingDisplay] = []
+    @Published var portfolio: Portfolio? = nil
     
     private let auth = AuthManager.shared
     private let db = Firestore.firestore()
@@ -42,7 +47,7 @@ class HoldingsManager: ObservableObject {
                 if let error = error {
                     return completion(.failure(error))
                 }
-                // reutrn holdings
+                // return holdings
                 
                 guard let documents = snapshot?.documents else {
                     return completion(.success([]))
@@ -65,6 +70,18 @@ class HoldingsManager: ObservableObject {
             guard let stockPrice = stockPrices[holding.symbol] else { return nil }
             return HoldingDisplay(holding: holding, stockPrice: stockPrice)
         }
+        
+        // Update portfolio whenever display holdings changee
+        updatePortfolio()
+    }
+    
+    //  Calculate portfolio from display holdings
+    private func updatePortfolio() {
+        guard !holdingsDisplay.isEmpty else {
+            portfolio = nil
+            return
+        }
+        portfolio = Portfolio(holdings: holdingsDisplay)
     }
     
     // Create or update holding based on transaction
