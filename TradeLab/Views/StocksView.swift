@@ -14,6 +14,7 @@ import SwiftUI
 struct StocksView: View {
     @StateObject private var socket = WebSocketsManager.shared
     @StateObject private var dmManager = DarkModeManager.shared
+    @StateObject private var auth = AuthManager.shared
     @State private var searchText = ""
     @State private var isConnected = false
     @State private var lastTradeCount = 0
@@ -100,6 +101,28 @@ struct StocksView: View {
                     .padding(.horizontal, 20)
                 }
                 .background(Color.clear)
+                
+                // Display balance
+                if let user = auth.currentUser {
+                    HStack(spacing: 8) {
+                        Image(systemName: "creditcard.fill")
+                            .font(.headline)
+                        Text("Balance:")
+                            .font(.headline)
+                        Text("$\(String(format: "%.2f", user.wallet))")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                    }
+                    .foregroundStyle(Color.themePrimary)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.themeOverlay)
+                    .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 3)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                }
                 
                 // Stocks
                 if filteredStocks.isEmpty {
