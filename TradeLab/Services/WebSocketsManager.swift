@@ -114,7 +114,7 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
             guard let text = text else { return }
             
             //Finnhub JSON data
-            print("Finnhub data:", text)
+            //print("Finnhub data:", text)
             
             //Parse data with Json Parser
             self?.jsonParser.parseTradeData(text)
@@ -148,7 +148,7 @@ class WebSocketsManager: NSObject, URLSessionWebSocketDelegate, ObservableObject
     //Test if recieve works
     func startFinnhubTest() {
         self.onMessage = { text, _ in
-            print("Finnhub data:", text ?? "")
+            print("Finnhub data recieved")
         }
         
         // Take key from Secrets
