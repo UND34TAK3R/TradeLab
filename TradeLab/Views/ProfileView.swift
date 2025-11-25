@@ -204,28 +204,54 @@ struct ProfileView: View {
     }
     
     private func loadUserProfile() {
-        // Check if we already have the current user from AuthManager
-        if let currentUser = auth.currentUser {
-            self.appUser = currentUser
+        isLoading = true
+        
+        auth.fetchCurrentAppUser { result in
             isLoading = false
-        } else {
-            // Fetch from Firestore if not available
-            auth.fetchCurrentAppUser { result in
-                isLoading = false
-                switch result {
-                case .success(let user):
-                    if let user = user {
-                        self.appUser = user
-                    } else {
-                        self.errorMessage = "No user logged in"
-                    }
-                case .failure(let error):
-                    self.errorMessage = "Failed to load profile: \(error.localizedDescription)"
+            switch result {
+            case .success(let user):
+                if let user = user {
+                    self.appUser = user
+                    self.loadProfileImage(from: user.picture)
+                } else {
+                    self.errorMessage = "Failed to fetch user data"
                 }
+            case .failure(let error):
+                self.errorMessage = "Failed to load profile: \(error.localizedDescription)"
             }
         }
     }
     
+    private func loadProfileImage(from base64String: String?) {
+            //print("Attempting to load profile image...")
+            
+            guard let base64String = base64String else {
+                //print("No base64 string provided")
+                self.profileImage = nil
+                return
+            }
+            
+            guard !base64String.isEmpty else {
+                //print("Base64 string is empty")
+                self.profileImage = nil
+                return
+            }
+            
+            guard let imageData = Data(base64Encoded: base64String) else {
+                //print("Failed to decode base64 string to Data")
+                self.profileImage = nil
+                return
+            }
+            
+            guard let image = UIImage(data: imageData) else {
+                //print("Failed to create UIImage from data")
+                self.profileImage = nil
+                return
+            }
+            
+            //print("✅ Profile image loaded successfully!")
+            self.profileImage = image
+        }
     private func handleLogout() {
         let result = auth.signOut()
         switch result {
