@@ -14,7 +14,6 @@ struct EditProfileView: View {
     @State private var showSuccessAlert: Bool = false
     
     var body: some View {
-        NavigationStack {
             ZStack {
                 LinearGradient(
                     gradient: Gradient(colors: [Color.themeGradientStart.opacity(0.6), Color.themeGradientEnd.opacity(0.6)]),
@@ -108,7 +107,6 @@ struct EditProfileView: View {
                         Spacer()
                         
                         // Save Button
-                        NavigationLink(destination: ProfileView()){
                             Button(action: {
                                 saveProfile()
                             }) {
@@ -129,11 +127,8 @@ struct EditProfileView: View {
                             }
                             .padding(.horizontal, 20)
                             .padding(.bottom, 30)
-                        }
                     }
                 }
-            }
-            .navigationBarTitleDisplayMode(.inline)
         }
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(image: $newProfilePicture)

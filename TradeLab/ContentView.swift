@@ -15,36 +15,34 @@ struct ContentView: View {
     @State private var isLoaded = false
     
     var body: some View {
-        NavigationView {
-            if auth.currentUser != nil {
-                TabScreen()
-                    .onAppear {
-                        if !isLoaded {
-                            isLoaded = true 
-                            
-                            // Fetch both concurrently
-                            transactions.fetchTransactions { result in
-                                switch result {
-                                case .success:
-                                    print("Transactions loaded successfully")
-                                case .failure(let error):
-                                    print("Error fetching transactions: \(error.localizedDescription)")
-                                }
+        if auth.currentUser != nil {
+            TabScreen()
+                .onAppear {
+                    if !isLoaded {
+                        isLoaded = true
+                        
+                        // Fetch both concurrently
+                        transactions.fetchTransactions { result in
+                            switch result {
+                            case .success:
+                                print("Transactions loaded successfully")
+                            case .failure(let error):
+                                print("Error fetching transactions: \(error.localizedDescription)")
                             }
-                            
-                            holdings.fetchHoldings { result in
-                                switch result {
-                                case .success:
-                                    print("Holdings loaded successfully")
-                                case .failure(let error):
-                                    print("Error fetching holdings: \(error.localizedDescription)")
-                                }
+                        }
+                        
+                        holdings.fetchHoldings { result in
+                            switch result {
+                            case .success:
+                                print("Holdings loaded successfully")
+                            case .failure(let error):
+                                print("Error fetching holdings: \(error.localizedDescription)")
                             }
                         }
                     }
-            } else {
-                LoginView()
-            }
+                }
+        } else {
+            LoginView()
         }
     }
 }

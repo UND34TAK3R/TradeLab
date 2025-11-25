@@ -18,6 +18,7 @@ struct ProfileView: View {
     @State private var appUser: AppUser?
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var profileImage: UIImage?
     
     var body: some View {
         ZStack {
@@ -44,18 +45,12 @@ struct ProfileView: View {
                                     .fill(Color.themeOverlay)
                                     .frame(width: 120, height: 120)
                                 
-                                if let pictureURL = appUser.picture, !pictureURL.isEmpty {
-                                    AsyncImage(url: URL(string: pictureURL)) { image in
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 120, height: 120)
-                                            .clipShape(Circle())
-                                    } placeholder: {
-                                        Image(systemName: "person.circle.fill")
-                                            .font(.system(size: 60))
-                                            .foregroundStyle(Color.themePrimary)
-                                    }
+                                if let profileImage = profileImage {
+                                    Image(uiImage: profileImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 120, height: 120)
+                                        .clipShape(Circle())
                                 } else {
                                     Image(systemName: "person.circle.fill")
                                         .font(.system(size: 60))
@@ -201,6 +196,9 @@ struct ProfileView: View {
         .preferredColorScheme(dmManager.isDarkMode ? .dark : .light)
         .onAppear {
             dmManager.syncWithUser()
+            loadUserProfile()
+        }
+        .refreshable {
             loadUserProfile()
         }
     }

@@ -20,10 +20,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct TradeLabApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject var authManager = AuthManager()
-    @StateObject var webSocketsManager = WebSocketsManager()
-    @StateObject var transactionManager = TransactionsManager()
-    @StateObject var holdingsManager = HoldingsManager()
+    @StateObject var authManager = AuthManager.shared
+    @StateObject var webSocketsManager = WebSocketsManager.shared
+    @StateObject var transactionManager = TransactionsManager.shared
+    @StateObject var holdingsManager = HoldingsManager.shared
     @StateObject var darkModeManager = DarkModeManager.shared
     var body: some Scene {
         WindowGroup {
