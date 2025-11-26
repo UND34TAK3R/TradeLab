@@ -42,7 +42,9 @@ struct ContentView: View {
                     }
                 }
         } else {
-            LoginView()
+            NavigationStack{
+                LoginView()
+            }
         }
     }
 }

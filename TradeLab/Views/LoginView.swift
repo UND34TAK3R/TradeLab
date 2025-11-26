@@ -94,13 +94,11 @@ struct LoginView: View {
                         }
                         .font(.subheadline)
                         
-                        Button(action: {}) {
-                            NavigationLink(destination: ResetPasswordView()) {
-                                Text("Forgot Password?")
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.white.opacity(0.9))
-                                    .underline()
-                            }
+                        NavigationLink(destination: ResetPasswordView()) {
+                            Text("Forgot Password?")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.white.opacity(0.9))
+                                .underline()
                         }
                         .padding(.top, 5)
                     }
